@@ -69,6 +69,43 @@ body {
     display: none;
 }
 
+
+.fab2 {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #fff;
+  color: #000;
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  z-index: 1000;
+}
+
+.fab {
+  background-color: #fc0d1a;
+  width: 60px;
+  height: 60px;
+  border-radius: 100%;
+  border: none;
+  outline: none;
+  color: #FFF;
+  font-size: 36px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  transition: .3s;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  position: absolute;
+  right: 32px;
+  bottom: 32px;
+  z-index: 1000;
+}
+
+.fab svg {
+  width: 80%;
+  height: 80%;
+}
+
 .loader {
     position: absolute;
     top: 14px;
