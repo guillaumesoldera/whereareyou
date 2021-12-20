@@ -12,39 +12,94 @@
     <body>
         <div id="map"></div>
         <script>
+            var map;
+            var userPosition=undefined;
+            var userPositionIconBase;
+            function userPositionIcon() {
+                return userPositionIconBase;
+            }
+
+            function watchUserPosition(successCallback, errorCallback) {
+                if (navigator && navigator.geolocation) {
+                    var options = {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                        };
+
+                    function success(pos) {
+                        var crd = pos.coords;
+                        userPosition = [crd.latitude, crd.longitude];
+                        L.marker([crd.latitude, crd.longitude],{icon:userPositionIcon()}).bindPopup('You are here!').addTo(map)
+                        map.setView(userPosition, 16)
+                        if (successCallback) {
+                            successCallback(pos)
+                        }
+                    }
+
+                    function onError(error) {
+                        if (errorCallback) {
+                            errorCallback(error);
+                        }
+                        if (error.code === 1) { // PERMISSION_DENIED
+                            window.alert("You won't be able to see and share your position if you don't allow geolocation");
+                        } else if (error.code === 2) { // POSITION_UNAVAILABLE
+                            window.alert("Oh ! Your position is unvailable for now. Please retry !");    
+                        } else if (error.code === 3) { // TIMEOUT
+                            window.alert("Oh ! Time too long to retrieve your position. Please retry !");    
+                        }
+                    }
+
+                    navigator.geolocation.watchPosition(success, onError, options);
+                }
+            }
+
             function loadMap() {
-                var userPositionIcon = L.divIcon({
+                userPositionIconBase = L.divIcon({
                    // html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="36" viewBox:"0 0 24 36><circle cx="12" cy="24" r="12" fill="#FF0000"/></svg>',
                     //html: '<svg width="27" height="41" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="13.5" cy="13.5" r="13.5" fill="currentColor" fill-opacity="0.2"></circle><circle cx="13.4992" cy="13.4997" r="9.84586" fill="currentColor" fill-opacity="0.4"></circle><circle cx="13.5015" cy="13.4996" r="5.78572" fill="currentColor" fill-opacity="0.8"></circle></svg>',
-                    html: '<svg width="27" height="41" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="13.5" cy="13.5" r="13.5" fill="currentColor" fill-opacity="0.4"></circle><circle cx="13.4992" cy="13.4997" r="9.84586" fill="currentColor" fill-opacity="0.6"></circle><circle cx="13.5015" cy="13.4996" r="5.78572" fill="currentColor" fill-opacity="1.0"></circle></svg>',
-                    className: "blink user-position",
+                    html: '<div class="beat"><svg width="27" height="41" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="13.5" cy="13.5" r="13.5" fill="currentColor" fill-opacity="0.4"></circle><circle cx="13.4992" cy="13.4997" r="9.84586" fill="currentColor" fill-opacity="0.6"></circle><circle cx="13.5015" cy="13.4996" r="5.78572" fill="currentColor" fill-opacity="1.0"></circle></svg></div>',
+                    className: "user-position",
                     iconSize: [27, 41],
                     iconAnchor: [13, 20],
                 })
+                var broPositionIconBase = L.divIcon({
+                    html: '<svg width="27" height="41" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="13.5" cy="13.5" r="13.5" fill="currentColor" fill-opacity="0.4"></circle><circle cx="13.4992" cy="13.4997" r="9.84586" fill="currentColor" fill-opacity="0.6"></circle><circle cx="13.5015" cy="13.4996" r="5.78572" fill="currentColor" fill-opacity="1.0"></circle></svg><span>L</span>',
+                    className: "blink bro-position",
+                    iconSize: [27, 41],
+                    iconAnchor: [13, 20],
+                })
+
+                function broPositionIcon(letter) {
+                    return L.divIcon({
+                        html: '<div class="hithere bro-letter-container"><svg width="27" height="41" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="13.5" cy="13.5" r="13.5" fill="currentColor" fill-opacity="0.8"></circle><circle cx="13.4992" cy="13.4997" r="9.84586" fill="currentColor" fill-opacity="1.0"></circle><circle cx="13.5015" cy="13.4996" r="5.78572" fill="currentColor" fill-opacity="1.0"></circle></svg><span class="bro-letter">' + letter + '</span></div>',
+                        className: "bro-position",
+                        iconSize: [27, 41],
+                        iconAnchor: [13, 20],
+                    });
+                }
+
+
                 L.Control.Geoloc = L.Control.extend({
                     onAdd: (mapRef) => {
                         var container = L.DomUtil.create('div', 'leaflet-bar')
                         var button = L.DomUtil.create('button', 'geoloc-button', container)
                         button.innerHTML = '<img src="./images/locate.svg" alt="Locate me!">';
                         button.onclick = () => {
-                            mapRef.locate();
-                            button.classList.add("disabled");
-                            button.disabled = true
-                            var loader = L.DomUtil.create('div', 'loader', button)
-                            mapRef.on('locationfound', (locEvent) => {
-                                var radius = locEvent.accuracy / 2
-                                console.log(radius)
-                                var point = locEvent.latlng
-                                mapRef.setView(point, 16)
-                                button.disabled = false;
-                                button.classList.remove("disabled");
-                                loader.remove();
-                                L.marker(point,{icon:userPositionIcon}).bindPopup('You are here!').addTo(map)
-                                //L.circle(point, radius).addTo(mapRef).bindPopup('Vous êtes vers là').openPopup()
-                            })
-                            mapRef.on('locationerror', (err) => {
-                                button.disabled = false;
-                            })
+                            if (userPosition === undefined) {
+                                button.classList.add("disabled");
+                                button.disabled = true
+                                var loader = L.DomUtil.create('div', 'loader', button)
+                                function enableButton() {
+                                    button.disabled = false;
+                                    button.classList.remove("disabled");
+                                    loader.remove();
+                                }
+                                watchUserPosition(enableButton, enableButton);
+                            } else {
+                                console.log(userPosition)
+                                mapRef.panTo(userPosition, 16)
+                            }
                         }
                         return container;
                     }
@@ -55,7 +110,7 @@
                 }
 
                 var centaure = [45.510236396660524, 6.707424420625342]
-                var map = L.map('map').setView([45.5085, 6.7075], 16);
+                map = L.map('map').setView([45.5085, 6.7075], 16);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '&copy; OpenStreetMap | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                     maxZoom: 18
@@ -64,9 +119,32 @@
                     maxZoom: 18,
                     opacity: 0.7
                 }).addTo(map);
-                L.marker(centaure).bindPopup('Centaure').addTo(map);
+                L.marker(centaure, {icon: userPositionIcon()}).bindPopup('Centaure').addTo(map);
                 var geolocButton = L.control.geoloc({position: 'topleft'})
                 geolocButton.addTo(map)
+
+
+
+                const urlSearchParams = new URLSearchParams(window.location.search);
+                const params = Object.fromEntries(urlSearchParams.entries());
+
+                if (params.users) {
+                    const users = params.users.split(";");
+                    users.forEach(user => {
+                        const startCoord = user.indexOf("[");
+                        const endCoord = user.indexOf("]");
+                        const userName = user.substring(0, startCoord);
+                        const coordsInfos = user.substring(startCoord + 1, endCoord);
+                        const coords = coordsInfos.split(",")
+                        const lat = coords[0].trim()
+                        const lon = coords[1].trim()
+                        L.marker([lat,lon], {icon: broPositionIcon(userName.substring(0, 1))}).bindPopup(userName).addTo(map);
+                    })
+                }
+
+                watchUserPosition()
+                
+
             }
         </script>
         <script src="./javascripts/leaflet.js" onload="loadMap()"></script>
