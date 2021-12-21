@@ -18,25 +18,49 @@
             var map;
             var userPosition=undefined;
             var userPositionIconBase;
+            var userName="User"
+            var userId;
+
+            function generateId() {
+                return btoa(Math.random() * 10000000) + "_" + btoa(Date.now())
+            }
 
             function sharePosition() {
-                let url = window.location.href;
-                const userParam = "You[" + userPosition[0] + "," + userPosition[1] + "]"
-                if (url.indexOf("?users=") !== -1) {
-                    // append current user
-                    url = url + ";" + userParam
+                if (userPosition) {
+                    const urlSearchParams = new URLSearchParams(window.location.search);
+                    const params = Object.fromEntries(urlSearchParams.entries());
+                    const userParam = encodeURIComponent(userName + "#" + userId + "[" + userPosition[0] + "," + userPosition[1] + "]")
+                    var newUsersQueryParam;
+                    if (params.users) {
+                        const users = params.users.split(";");
+                        var otherUsersQueryParam = users.filter(userEncoded => {
+                            const user = decodeURIComponent(userEncoded);
+                            const startCoord = user.indexOf("[");
+                            const userKey = user.substring(0, startCoord);
+                            const userKeyParts = userKey.split("#")
+                            const userParamId = userKeyParts[userKeyParts.length - 1]
+                            return userParamId !== userId
+                        }).join(";")
+                        urlSearchParams.delete("users");
+                        newUsersQueryParam = otherUsersQueryParam  + ";" + userParam
+                    } else {
+                        newUsersQueryParam = userParam
+                    }
+                    urlSearchParams.append("users", newUsersQueryParam)
+
+                    const url = window.location.origin + window.location.pathname + "?" + urlSearchParams.toString()
+                    console.log(url)
+                    if (navigator.share) {
+                        navigator.share({
+                            title: "Where are you ?",
+                            text: "Where are you ? I'm here !",
+                            url: url,
+                        });
+                    } else {
+                        window.alert("You can't share your position. Please copy/paste following URL : " + url)
+                    }
                 } else {
-                    // create user query param
-                    url = url + "?users=" + userParam
-                }
-                if (navigator.share) {
-                    navigator.share({
-                        title: "Where are you ?",
-                        text: "Where are you ? I'm here !",
-                        url: url,
-                    });
-                } else {
-                    window.alert("You can't share your position. Please copy/paste following URL : " + url)
+                    window.alert("Your position is unknown, so you can't share it...")
                 }
             }
 
@@ -155,7 +179,8 @@
 
                 if (params.users) {
                     const users = params.users.split(";");
-                    users.forEach(user => {
+                    users.forEach(userEncoded => {
+                        const user = decodeURIComponent(userEncoded);
                         const startCoord = user.indexOf("[");
                         const endCoord = user.indexOf("]");
                         const userName = user.substring(0, startCoord);
@@ -171,6 +196,12 @@
                 
 
             }
+            userId = localStorage.getItem("user_id")
+            if (userId == null) {
+                console.log(userId);
+                userId = generateId();
+                localStorage.setItem("user_id", userId);
+            } 
         </script>
         <script src="./javascripts/leaflet.js" onload="loadMap()"></script>
     </body>
