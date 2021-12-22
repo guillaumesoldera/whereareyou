@@ -4,12 +4,19 @@
         <title>Where are you ?</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
         <meta name="description" content="Perdu sur les pistes ? T'as perdu tes copains ? C'est bon t'es sauvé !">
-        <!--<link rel="shortcut icon" type="image/png" href="/images/favicon.ico">
-        <link rel="apple-touch-icon" type="image/png" href="/images/apple-touch-icon.png">-->
+        <link rel="shortcut icon" type="image/png" href="/images/favicon.png">
+        <link rel="apple-touch-icon" type="image/png" href="/images/192.png">
         <link rel="stylesheet" href="./styles/main.css"/>
         <link rel="stylesheet" href="./styles/leaflet.css"/>
+        <link rel="manifest" href="./manifest.json" />
+        <link rel="apple-touch-startup-image" href="./images/128.png">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-capable" content="yes">
     </head>
     <body>
+        <div id="new-content-alert" class="alert alert-info" style="display: none">
+            <strong>New version available!</strong><br/><a href="#" class="alert-link" onclick="location.reload(true)">Click to refresh page</a>
+        </div>
         <div id="map"></div>
         <button id="fab" class="fab disabled" onclick="openConfirm()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z" class=""></path></svg>
@@ -210,7 +217,7 @@
                     maxZoom: 18,
                     opacity: 0.7
                 }).addTo(map);
-                L.marker(centaure, {icon: userPositionIcon()}).bindPopup('Centaure').addTo(map);
+                L.marker(centaure).bindPopup('Centaure').addTo(map);
                 var geolocButton = L.control.geoloc({position: 'topleft'})
                 geolocButton.addTo(map)
 
@@ -244,6 +251,34 @@
                 localStorage.setItem("user_id", userId);
             }
             userName = localStorage.getItem("user-name") || "User"
+
+            function register(){
+                navigator.serviceWorker
+                .register("./sw.js", {scope:"./"})
+                .then(registration => {
+                    registration.onupdatefound = () => {
+                        const installingWorker = registration.installing;
+                        installingWorker.onstatechange = () => {
+                            console.log('Service Worker state', installingWorker.state);
+                            if (installingWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                console.log('New content is available; please refresh.');
+                                document.getElementById("new-content-alert").style = "";
+                            } else {
+                                console.log('Content is cached for offline use.');
+                            }
+                            }
+                        };
+                    };
+                })
+                .catch(error => {
+                    console.error('Error during service worker registration:', error);
+                });
+            }
+            
+            if("serviceWorker" in navigator){
+                window.addEventListener("load", register)
+            }
         </script>
         <script src="./javascripts/leaflet.js" onload="loadMap()"></script>
     </body>

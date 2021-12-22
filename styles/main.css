@@ -221,6 +221,58 @@ body {
     transform: translateZ(0);
 }
 
+#new-content-alert.alert {
+  margin-bottom: 0px;
+}
+
+#new-content-alert {
+  position: absolute;
+  z-index: 3000;
+  top: 10px;
+  width: 200px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  text-align: center;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  color: #638592;
+  border: 2px solid #638592;
+  box-shadow: 0 3px 6px rgb(0,0,0,0.16), 0 3px 6px rgb(0,0,0,0.23);
+}
+
+#new-content-alert a {
+  margin-top: 4px;
+  color: #4A636D
+}
+
+@media screen and (max-width:576px){
+  #new-content-alert {
+    font-size: 11px;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    padding: 2px;
+  }
+}
+@media screen and (min-width:576px){
+  #new-content-alert {
+    font-size: 12px;
+    top: 10px;
+    left: 15px;
+    right: 15px;
+    padding: 2px;
+  }
+}
+@media screen and (min-width:576px){
+  #new-content-alert {
+    width:50vw;
+    font-size: 1rem;
+    margin: 0 auto;
+  }
+}
+
 @-webkit-keyframes load {
     0%,
     100% {

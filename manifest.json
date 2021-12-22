@@ -1,0 +1,51 @@
+{
+    "name": "Where Are You",
+    "short_name": "Where Are You",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#fff",
+    "theme_color": "#638592",
+    "description": "Are you lost ? Share your position with your friends !",
+    "icons": [
+        {
+          "src": "images/512.png",
+          "sizes": "512x512"
+        },
+        {
+          "src": "images/192.png",
+          "sizes": "192x192"
+        },
+        {
+          "src": "images/144.png",
+          "sizes": "144x144"
+        },
+        {
+          "src": "images/128.png",
+          "sizes": "128x128"
+        },
+        {
+          "src": "images/96.png",
+          "sizes": "96x96"
+        },
+        {
+          "src": "images/72.png",
+          "sizes": "72x72"
+        },
+        {
+          "src": "ios/64.png",
+          "sizes": "64x64"
+        },
+        {
+          "src": "images/48.png",
+          "sizes": "48x48"
+        },
+        {
+          "src": "images/32.png",
+          "sizes": "32x32"
+        },
+        {
+          "src": "images/16.png",
+          "sizes": "16x16"
+        }
+      ]
+}
