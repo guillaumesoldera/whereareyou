@@ -11,9 +11,26 @@
     </head>
     <body>
         <div id="map"></div>
-        <button class="fab" onclick="sharePosition()">
+        <button id="fab" class="fab disabled" onclick="openConfirm()">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z" class=""></path></svg>
         </button>
+        
+        <div id="confirm-share" class="modal fade">
+            <div class="confirm-dialog">
+                <div class="confirm-content">
+                    <svg onclick="closeConfirm()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" class="close"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z" class=""></path></svg>
+                    <div class="user-name-container">
+                        <label for="user-input">Your name :</label>
+                        <input id="user-input" type="text">
+                    </div>
+                    <button onclick="sharePosition()">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M503.691 189.836L327.687 37.851C312.281 24.546 288 35.347 288 56.015v80.053C127.371 137.907 0 170.1 0 322.326c0 61.441 39.581 122.309 83.333 154.132 13.653 9.931 33.111-2.533 28.077-18.631C66.066 312.814 132.917 274.316 288 272.085V360c0 20.7 24.3 31.453 39.687 18.164l176.004-152c11.071-9.562 11.086-26.753 0-36.328z" class=""></path></svg>
+                        <span>Share your position</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <script>
             var map;
             var userPosition=undefined;
@@ -21,11 +38,34 @@
             var userName="User"
             var userId;
 
+            function closeConfirm() {
+                document.getElementById("confirm-share").classList.remove("in")
+                setTimeout(() => {
+                    document.getElementById("confirm-share").classList.remove("show")
+                }, 200)
+            }
+
+            function openConfirm() {
+                if (userName) {
+                    document.getElementById("user-input").value = userName
+                }
+                document.getElementById("confirm-share").classList.add("show")
+                setTimeout(() => {
+                    document.getElementById("confirm-share").classList.add("in")
+                }, 200)
+            }
+
             function generateId() {
                 return btoa(Math.random() * 10000000) + "_" + btoa(Date.now())
             }
 
             function sharePosition() {
+                closeConfirm()
+                userName = document.getElementById("user-input").value;
+                localStorage.setItem("user-name", userName);
+                if (userName == null || userName.trim() === '') {
+                    userName = "User"
+                }
                 if (userPosition) {
                     const urlSearchParams = new URLSearchParams(window.location.search);
                     const params = Object.fromEntries(urlSearchParams.entries());
@@ -77,6 +117,7 @@
                         };
 
                     function success(pos) {
+                        document.getElementById("fab").classList.remove("disabled")
                         var crd = pos.coords;
                         userPosition = [crd.latitude, crd.longitude];
                         L.marker([crd.latitude, crd.longitude],{icon:userPositionIcon()}).bindPopup('You are here!').addTo(map)
@@ -87,6 +128,7 @@
                     }
 
                     function onError(error) {
+                        document.getElementById("fab").classList.add("disabled")
                         if (errorCallback) {
                             errorCallback(error);
                         }
@@ -198,10 +240,10 @@
             }
             userId = localStorage.getItem("user_id")
             if (userId == null) {
-                console.log(userId);
                 userId = generateId();
                 localStorage.setItem("user_id", userId);
-            } 
+            }
+            userName = localStorage.getItem("user-name") || "User"
         </script>
         <script src="./javascripts/leaflet.js" onload="loadMap()"></script>
     </body>
