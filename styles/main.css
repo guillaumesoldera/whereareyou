@@ -99,6 +99,7 @@ body {
   right: 32px;
   bottom: 32px;
   z-index: 1000;
+  padding: 1px 6px;
 }
 
 .fab.disabled {
